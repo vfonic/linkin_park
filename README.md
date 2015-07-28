@@ -1,8 +1,15 @@
 # LinkinPark
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/linkin_park`. To experiment with that code, run `bin/console` for an interactive prompt.
+Perf comparison:
 
-TODO: Delete this and the text above, and describe your gem
+```
+bundle exec exe/linkin_park crawl "https://gocardless.com"  28.67s user 2.36s system 15% cpu 3:18.27 total
+
+wget
+FINISHED --2015-07-28 19:20:46--
+Total wall clock time: 2m 40s
+Downloaded: 979 files, 46M in 27s (1.69 MB/s)
+```
 
 ## Installation
 
