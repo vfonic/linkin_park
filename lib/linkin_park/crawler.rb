@@ -1,73 +1,50 @@
 require 'open-uri'
 require 'nokogiri'
 require 'fileutils'
+require 'linkin_park/uri_converter'
 
 module LinkinPark
   class Crawler
     def initialize
       # here be stuff (options hash) like
       # recursive, domains, assets, robots, depth, etc
-      @visited_links = Set.new [ "" ]
-      @queue = []
     end
 
     def crawl(url:)
-      url = url.slice(0, url.index('#')) if url.index('#')
-      uri = URI(url)
-      setup(uri: uri)
+      uri = UriConverter.new(uri: url)
+      @visited_links = Set.new [ uri ]
+      @queue = [ uri ]
 
-      @queue << uri
+      @root_url = uri.root_url
 
-      threads = []
-      4.times do
-        threads << Thread.new do
-          crawl_from_queue
-        end
+      until @queue.empty?
+        uri = @queue.shift
+
+        body = fetch_body(uri: uri.to_s)
+        next unless body
+
+        path = uri.file_relative_path
+
+        write_to_file(content: body, path: path)
+
+        add_links_to_queue(body)
+        puts ""
       end
-
-      threads.each {|thread| thread.join }
     end
 
     private
-      def crawl_from_queue
-        while uri = @queue.shift
-          body = fetch_body(uri:uri)
-          next unless body
-
-          file_relative_path = file_name(uri: uri)
-
-          write_to_file(content: body, path: file_relative_path)
-
-          add_links_to_queue(body)
-          print "\n"
-        end
-      end
-
-      def setup(uri:)
-        @root_url = "#{uri.scheme}://#{uri.host}"
-        @base_path = File.join(Dir.pwd, uri.host)
-        FileUtils.mkdir_p(@base_path)
-        @visited_links << uri
-      end
-
       def fetch_body(uri:)
-        print "Fetching: #{uri.to_s}\n"
+        puts "Fetching: #{uri.to_s}"
         begin
           page = open(uri)
           page.read
         rescue OpenURI::HTTPError => e
-          STDERR.print e
+          STDERR.puts e
         end
       end
 
-      def file_name(uri:)
-        path = uri.path
-        path = File.join(path, "index.html") if File.extname(path) == '' || path.end_with?('/')
-        File.join(@base_path, path)
-      end
-
       def write_to_file(content:, path:)
-        print "Saving to: #{path}\n"
+        puts "Saving to: #{path}"
 
         dirname = File.dirname(path)
 
@@ -93,9 +70,9 @@ module LinkinPark
             next if should_refuse_url?(url: href)
 
             begin
-              uri = URI::join(@root_url, href)
+              uri = UriConverter.new(domain: @root_url, uri: href)
             rescue URI::InvalidURIError => e
-              STDERR.print e
+              STDERR.puts e
               next
             end
 
