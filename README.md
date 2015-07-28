@@ -5,6 +5,9 @@ Perf comparison:
 ```
 bundle exec exe/linkin_park crawl "https://gocardless.com"  28.67s user 2.36s system 15% cpu 3:18.27 total
 
+parallel:
+bundle exec exe/linkin_park crawl "https://gocardless.com"  28.88s user 2.50s system 16% cpu 3:15.62 total
+
 wget
 FINISHED --2015-07-28 19:20:46--
 Total wall clock time: 2m 40s

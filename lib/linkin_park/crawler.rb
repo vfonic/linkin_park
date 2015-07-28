@@ -18,22 +18,31 @@ module LinkinPark
 
       @queue << uri
 
-      until @queue.empty?
-        uri = @queue.shift
-
-        body = fetch_body(uri:uri)
-        next unless body
-
-        file_relative_path = file_name(uri: uri)
-
-        write_to_file(content: body, path: file_relative_path)
-
-        add_links_to_queue(body)
-        puts ""
+      threads = []
+      4.times do
+        threads << Thread.new do
+          crawl_from_queue
+        end
       end
+
+      threads.each {|thread| thread.join }
     end
 
     private
+      def crawl_from_queue
+        while uri = @queue.shift
+          body = fetch_body(uri:uri)
+          next unless body
+
+          file_relative_path = file_name(uri: uri)
+
+          write_to_file(content: body, path: file_relative_path)
+
+          add_links_to_queue(body)
+          print "\n"
+        end
+      end
+
       def setup(uri:)
         @root_url = "#{uri.scheme}://#{uri.host}"
         @base_path = File.join(Dir.pwd, uri.host)
@@ -42,12 +51,12 @@ module LinkinPark
       end
 
       def fetch_body(uri:)
-        puts "Fetching: #{uri.to_s}"
+        print "Fetching: #{uri.to_s}\n"
         begin
           page = open(uri)
           page.read
         rescue OpenURI::HTTPError => e
-          STDERR.puts e
+          STDERR.print e
         end
       end
 
@@ -58,7 +67,7 @@ module LinkinPark
       end
 
       def write_to_file(content:, path:)
-        puts "Saving to: #{path}"
+        print "Saving to: #{path}\n"
 
         dirname = File.dirname(path)
 
@@ -86,7 +95,7 @@ module LinkinPark
             begin
               uri = URI::join(@root_url, href)
             rescue URI::InvalidURIError => e
-              STDERR.puts e
+              STDERR.print e
               next
             end
 
