@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+require_relative '../lib/linkin_park'
+
+LinkinPark::CLI.start(ARGV || $stdin)

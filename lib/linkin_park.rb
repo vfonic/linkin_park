@@ -1,5 +1,13 @@
-require "linkin_park/version"
+require 'linkin_park/version'
+require 'linkin_park/crawler'
+require 'thor'
 
 module LinkinPark
-  # Your code goes here...
+  class CLI < Thor
+    desc "crawl http://gocardless.com", "Crawls the entire website and stores it locally"
+    def crawl(url)
+      crawler = Crawler.new
+      crawler.crawl(url: url)
+    end
+  end
 end
