@@ -1,7 +1,8 @@
 require 'open-uri'
 require 'nokogiri'
 require 'fileutils'
-require 'linkin_park/uri_converter'
+require 'uri_converter'
+require 'uri_fetcher'
 
 module LinkinPark
   class Crawler
@@ -17,29 +18,22 @@ module LinkinPark
 
       @root_url = uri.root_url
 
-      until @queue.empty?
-        uri = @queue.shift
-
-        body = fetch_body(uri: uri.to_s)
-        next unless body
-
-        path = uri.file_relative_path
-
-        write_to_file(content: body, path: path)
-
-        add_links_to_queue(body)
-        puts ""
-      end
+      crawl_from_queue
     end
 
     private
-      def fetch_body(uri:)
-        puts "Fetching: #{uri.to_s}"
-        begin
-          page = open(uri)
-          page.read
-        rescue OpenURI::HTTPError => e
-          STDERR.puts e
+      def crawl_from_queue
+        while uri = @queue.shift
+
+          body = UriFetcher.new(uri: uri, verbose: true).fetch
+          next unless body
+
+          path = uri.file_relative_path
+
+          write_to_file(content: body, path: path)
+
+          add_links_to_queue(body)
+          puts ""
         end
       end
 
