@@ -11,7 +11,7 @@ class UriConverter
     end
   end
 
-  def file_relative_path
+  def relative_path
     base_path = File.join(Dir.pwd, @uri.host)
     path = @uri.path
     path = File.join(path, "index.html") if File.extname(path) == '' || path.end_with?('/')

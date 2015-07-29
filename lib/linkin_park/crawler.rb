@@ -1,12 +1,15 @@
-require 'open-uri'
 require 'nokogiri'
-require 'fileutils'
 require 'uri_converter'
 require 'uri_fetcher'
+require 'file_storage'
+require 'scraper'
 
 module LinkinPark
   class Crawler
-    def initialize
+    def initialize(storage: nil, verbose: false)
+      @verbose = verbose
+      storage ||= FileStorage.new(verbose: @verbose)
+      @storage = storage
       # here be stuff (options hash) like
       # recursive, domains, assets, robots, depth, etc
     end
@@ -25,61 +28,30 @@ module LinkinPark
       def crawl_from_queue
         while uri = @queue.shift
 
-          body = UriFetcher.new(uri: uri, verbose: true).fetch
+          fetcher = UriFetcher.new(uri: uri, verbose: @verbose)
+          body = fetcher.fetch
           next unless body
 
-          path = uri.file_relative_path
+          path = uri.relative_path
 
-          write_to_file(content: body, path: path)
+          @storage.store(path: path, content: body)
 
-          add_links_to_queue(body)
-          puts ""
-        end
-      end
-
-      def write_to_file(content:, path:)
-        puts "Saving to: #{path}"
-
-        dirname = File.dirname(path)
-
-        FileUtils.mkdir_p(dirname)
-
-        open(path, "wb") do |file|
-          file.write(content)
-        end
-      end
-
-      def add_links_to_queue(body)
-        html = Nokogiri::HTML(body)
-        links_for(html: html, element: "a", attribute: "href")
-        links_for(html: html, element: "img", attribute: "src")
-        links_for(html: html, element: "script", attribute: "src")
-        links_for(html: html, element: "link", attribute: "href")
-      end
-
-      def links_for(html:, element:, attribute:)
-        html.css(element).each do |link|
-          if href = link.attr(attribute)
-            href = href.slice(0, href.index('#')) if href.index('#')
-            next if should_refuse_url?(url: href)
-
+          links = Scraper.links_for_page(http_response: fetcher)
+          links.each do |link|
             begin
-              uri = UriConverter.new(domain: @root_url, uri: href)
+              uri = UriConverter.new(domain: @root_url, uri: link)
+
+              unless @visited_links.include?(uri)
+                @queue << uri
+                @visited_links << uri
+              end
             rescue URI::InvalidURIError => e
               STDERR.puts e
-              next
-            end
-
-            unless @visited_links.include?(uri)
-              @queue << uri
-              @visited_links << uri
             end
           end
-        end
-      end
 
-      def should_refuse_url?(url:)
-        url.empty? || url.start_with?('//') || url.start_with?('http://') || url.start_with?('https://') || url.start_with?('#')
+          puts "" if @verbose
+        end
       end
   end
 end

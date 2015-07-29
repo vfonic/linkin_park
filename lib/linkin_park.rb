@@ -6,7 +6,7 @@ module LinkinPark
   class CLI < Thor
     desc "crawl https://gocardless.com", "Crawls the entire website and stores it locally"
     def crawl(url)
-      crawler = Crawler.new
+      crawler = Crawler.new(verbose: true)
       crawler.crawl(url: url)
     end
   end

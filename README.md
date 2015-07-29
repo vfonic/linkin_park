@@ -14,6 +14,17 @@ Total wall clock time: 2m 40s
 Downloaded: 979 files, 46M in 27s (1.69 MB/s)
 ```
 
+Implementation Thoughts
+-----------------------
+
+Selective crawling vs full crawling
+Multithreading/multi processing - multi processing on machine level - inifinite scaling
+Downloading set of typical additional website resources
+Handling file_name == dir_name issue
+Overloading websites
+
+
+
 ## Installation
 
 Add this line to your application's Gemfile:
