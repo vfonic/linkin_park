@@ -7,6 +7,11 @@ class UriConverter
     if domain
       @uri = URI::join(domain, url)
     else
+      @uri = URI.parse(url)
+      unless @uri.kind_of?(URI::HTTP) || @uri.kind_of?(URI::HTTPS)
+        @uri = "http://#{@uri}"
+        raise InvalidUriError, @uri.to_s unless @uri.kind_of?(URI::HTTP) || @uri.kind_of?(URI::HTTPS)
+      end
       @uri = URI(url)
     end
   end
@@ -49,3 +54,5 @@ class UriConverter
       url
     end
 end
+
+class InvalidUriError < StandardError; end
