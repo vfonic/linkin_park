@@ -30,7 +30,7 @@ class UriFetcher
         @head = response.meta
         @body = response.read
         @fetched = true
-      rescue OpenURI::HTTPError => e
+      rescue RuntimeError, OpenURI::HTTPError => e
         STDERR.puts e
       end
     end

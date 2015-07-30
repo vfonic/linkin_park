@@ -45,7 +45,7 @@ module LinkinPark
                 @queue << uri
                 @visited_links << uri
               end
-            rescue URI::InvalidURIError => e
+            rescue UriConverter::CrossDomainError, URI::InvalidURIError => e
               STDERR.puts e
             end
           end

@@ -6,6 +6,7 @@ class UriConverter
     url = strip_parameters_and_fragment(uri)
     if domain
       @uri = URI::join(domain, url)
+      raise CrossDomainError, "#{@uri.to_s} doesn't belong under #{domain} domain." unless @uri.to_s.start_with?(domain)
     else
       @uri = URI.parse(url)
       unless @uri.kind_of?(URI::HTTP) || @uri.kind_of?(URI::HTTPS)
@@ -56,3 +57,5 @@ class UriConverter
 end
 
 class InvalidUriError < StandardError; end
+
+class CrossDomainError < StandardError; end
