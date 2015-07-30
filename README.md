@@ -17,33 +17,31 @@ Downloaded: 979 files, 46M in 27s (1.69 MB/s)
 Implementation Thoughts
 -----------------------
 
-Selective crawling vs full crawling
-Multithreading/multi processing - multi processing on machine level - inifinite scaling
-Downloading set of typical additional website resources
-Handling file_name == dir_name issue
-Overloading websites
-
+* Selective crawling vs full crawling
+* Multithreading/multi processing - this could be achieved with sidekiq or sucker_punch or the likes
+* Parallelization on machine level - "inifinite" scaling
+* Downloading set of typical additional website resources
+* Handling `file_name == dir_name` issue
+* Overloading websites
+* Tests are missing
 
 
 ## Installation
 
-Add this line to your application's Gemfile:
+1. Clone git repo
+2. Run `bundle`
+2. Run `rake install`
 
-```ruby
-gem 'linkin_park'
-```
+linkin_park comes with a CLI.
 
-And then execute:
+To display help, simply run:
 
-    $ bundle
+    `linkin_park`
 
-Or install it yourself as:
+To run the crawler, run:
 
-    $ gem install linkin_park
+    `linkin_park crawl http://example.com`
 
-## Usage
-
-TODO: Write usage instructions here
 
 ## Development
 
